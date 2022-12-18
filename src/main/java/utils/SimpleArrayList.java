@@ -4,13 +4,17 @@ import java.util.*;
 
 public class SimpleArrayList<E> implements List<E> {
 
-    public static final int DEFAULT_INITIAL_CAPACITY = 10;
+    public static final int DEFAULT_INITIAL_CAPACITY = 4;
     private int size;
     private int modCount;
     private Object[] data;
 
     public SimpleArrayList() {
         data = new Object[DEFAULT_INITIAL_CAPACITY];
+    }
+
+    public SimpleArrayList(int initSize) {
+        data = new Object[initSize];
     }
 
     private void grow() {
@@ -58,13 +62,57 @@ public class SimpleArrayList<E> implements List<E> {
     }
 
     /**
-     * Метод не реализован, выбрасывает UnsupportedOperationException
+     * Метод возвращает Итератор по списку
      *
-     * @return
+     * @return Возвращает итератор по списку
      */
     @Override
     public Iterator<E> iterator() {
-        throw new UnsupportedOperationException();
+        return new InnerIterator<>();
+    }
+
+    /**
+     * Итератор по SimpleArrayList
+     *
+     * @param <E> Тип данных, хранимых в коллекции
+     *            по которой осуществляется итерирование
+     */
+    private class InnerIterator<E> implements Iterator<E> {
+        private int pointer = 0;
+        private int expModCount = modCount;
+
+        /**
+         * Метод для определения есть ли в списке ещё элементы
+         *
+         * @return возвращает true если в списке остались элементы
+         * через которые ещё не прошёл итератор
+         */
+        @Override
+        public boolean hasNext() {
+            return pointer < size;
+        }
+
+        /**
+         * Метод для получения элемента списка
+         *
+         * @return возвращает следующий элемент списка
+         * @throws NoSuchElementException          если в списке нет следующего элемента
+         * @throws ConcurrentModificationException если после создания итератора список был изменён.
+         */
+        @Override
+        public E next() {
+            checkMod();
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            return (E) data[pointer++];
+        }
+
+        private void checkMod() {
+            if (expModCount != modCount) {
+                throw new ConcurrentModificationException();
+            }
+        }
     }
 
     /**
@@ -113,7 +161,7 @@ public class SimpleArrayList<E> implements List<E> {
     @Override
     public boolean remove(Object o) {
         boolean result = false;
-        int index = indexOf(0);
+        int index = indexOf(o);
         if (index != -1) {
             modCount++;
             result = true;
@@ -184,7 +232,7 @@ public class SimpleArrayList<E> implements List<E> {
         while (arr.length > data.length - size) {
             grow();
         }
-        System.arraycopy(data, index, data, index + arr.length, arr.length);
+        System.arraycopy(data, index, data, index + arr.length, size);
         System.arraycopy(arr, 0, data, index, arr.length);
         size += arr.length;
         return true;
@@ -213,13 +261,30 @@ public class SimpleArrayList<E> implements List<E> {
     }
 
     /**
-     * Метод не реализован, выбрасывает UnsupportedOperationException
+     * Метод оставляет в списке только те элементы, которые есть
+     * в коллекции c
      *
-     * @return
+     * @return возвращает true если в результате применения
+     * операции список был изменен.
+     * @throws NullPointerException если коллекция c==null
      */
     @Override
     public boolean retainAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
+        if (null == c) {
+            throw new NullPointerException();
+        }
+
+        Object[] newData = new Object[data.length];
+        int i = 0;
+        for (int j = 0; j < size; j++) {
+            if (c.contains(data[j])) {
+                newData[i++] = data[j];
+            }
+        }
+        boolean result = (i != size);
+        data = newData;
+        size = i;
+        return result;
     }
 
     /**
@@ -318,7 +383,7 @@ public class SimpleArrayList<E> implements List<E> {
     public int indexOf(Object o) {
         int index = -1;
         for (int i = 0; i < size; i++) {
-            if (Objects.equals(0, data[i])) {
+            if (Objects.equals(o, data[i])) {
                 index = i;
                 break;
             }
@@ -372,5 +437,65 @@ public class SimpleArrayList<E> implements List<E> {
     @Override
     public List<E> subList(int fromIndex, int toIndex) {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Метод сортирует список при помощи передаваемого ему объекта-компаратора
+     * @param c - компаратор, сравнивающий элементы списка для сортировки
+     */
+    @Override
+    public void sort(Comparator<? super E> c) {
+        innerQuickSort(0, size - 1, c);
+    }
+
+    private void innerQuickSort(int begin, int end, Comparator<? super E> comparator) {
+        if (begin < end) {
+            int partitionIndex = partition(begin, end, comparator);
+
+            innerQuickSort(begin, partitionIndex - 1, comparator);
+            innerQuickSort(partitionIndex + 1, end, comparator);
+        }
+    }
+
+    private int partition(int begin, int end, Comparator<? super E> comparator) {
+        int pivotPos = end;
+        Object pivot = data[end];
+
+        Comparator c = (Comparator) comparator;
+
+        int i = (begin - 1);
+        for (int j = begin; j < end; j++) {
+            if (c.compare(data[j], pivot) <= 0) {
+                i++;
+                if (i != j) {
+                    swap(i, j);
+                }
+            }
+        }
+        swap(i + 1, pivotPos);
+        return i + 1;
+    }
+
+    private void swap(int i, int j) {
+        Object tmp = data[i];
+        data[i] = data[j];
+        data[j] = tmp;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("[");
+        int i = 0;
+        if (size > 0) {
+            while (i < size) {
+                sb.append(data[i].toString());
+                sb.append(", ");
+                i++;
+            }
+            sb.delete(sb.length() - 2, sb.length());
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }
