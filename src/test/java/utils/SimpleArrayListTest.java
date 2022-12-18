@@ -126,6 +126,23 @@ public class SimpleArrayListTest {
         Assert.assertEquals(5, list.size());
     }
 
+    @Test
+    public void whenAddAllWithIndexAfterLast(){
+        List<Integer> list = new SimpleArrayList<>();
+        list.addAll(0,List.of(1,2,3));
+        list.add(4);
+        list.addAll(4,List.of(5,6));
+
+        Assert.assertEquals(6, list.size());
+        Assert.assertEquals(1, list.get(0).intValue());
+        Assert.assertEquals(2, list.get(1).intValue());
+        Assert.assertEquals(3, list.get(2).intValue());
+        Assert.assertEquals(4, list.get(3).intValue());
+        Assert.assertEquals(5, list.get(4).intValue());
+        Assert.assertEquals(6, list.get(5).intValue());
+
+    }
+
     @Test(expected = IndexOutOfBoundsException.class)
     public void whenAddAllWithIndexLessThan0() {
         List<String> list = new SimpleArrayList<>();
@@ -140,11 +157,11 @@ public class SimpleArrayListTest {
         list.add("Kate");
         list.add("Leo");
         List<String> additionalList = List.of("Jack", "Jerrie");
-        list.addAll(2, additionalList);
+        list.addAll(3, additionalList);
     }
 
     @Test
-    public void whenAndRemove() {
+    public void whenAddAndRemove() {
         List<String> list = new SimpleArrayList<>();
         list.add("Kate");
         Assert.assertTrue(list.remove("Kate"));
@@ -178,6 +195,32 @@ public class SimpleArrayListTest {
     public void whenRemoveWithNegativeIndex() {
         List<Long> list = new ArrayList<>(5);
         list.remove(1);
+    }
+
+    @Test
+    public  void whenAddAndRemove100000at0(){
+        SimpleArrayList<Long> objects = new SimpleArrayList<>();
+        for (int i = 0; i < 100000; i++) {
+            objects.add(0, Long.valueOf(i));
+        }
+        Assert.assertEquals(100000, objects.size());
+        for (int i = 0; i < 100000; i++) {
+            objects.remove(0);
+        }
+        Assert.assertEquals(0, objects.size());
+    }
+
+    @Test
+    public  void whenAddAndRemove100000(){
+        SimpleArrayList<Long> objects = new SimpleArrayList<>();
+        for (int i = 0; i < 100000; i++) {
+            objects.add(Long.valueOf(i));
+        }
+        Assert.assertEquals(100000, objects.size());
+        for (int i = 0; i < 100000; i++) {
+            objects.remove(Long.valueOf(i));
+        }
+        Assert.assertEquals(0, objects.size());
     }
 
     /* Тесты на метод public boolean retainAll(Collection<?> c) */

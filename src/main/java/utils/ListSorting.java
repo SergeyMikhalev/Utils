@@ -49,7 +49,6 @@ public class ListSorting {
 
     public static void main(String[] args) {
         List<String> initial = List.of("Eagle","Pig","Boar","Wolf","Tiger");
-        List<String> initial2 = List.of("Eagle","Pig","Boar","Wolf","Tiger", null, null);
 
         List<String> list = new ArrayList<>(initial);
         System.out.println(list);
@@ -81,10 +80,18 @@ public class ListSorting {
 
         System.out.println();
 
-        List<String> listN = new ArrayList<>(initial2);
-        System.out.println(listN);
-        listN.sort(Comparator.naturalOrder());
-        System.out.println(listN);
+        SimpleArrayList<Long> objects = new SimpleArrayList<>();
+        for (int i = 0; i < 100000; i++) {
+            objects.add(0, Long.valueOf(i));
+        }
+
+        System.out.println(objects.size());
+
+        for (int i = 0; i < 100000; i++) {
+            objects.remove(0);
+        }
+
+        System.out.println(objects.size());
 
     }
 

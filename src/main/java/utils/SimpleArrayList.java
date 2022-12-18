@@ -223,7 +223,7 @@ public class SimpleArrayList<E> implements List<E> {
      */
     @Override
     public boolean addAll(int index, Collection<? extends E> c) {
-        Objects.checkIndex(index, size);
+        Objects.checkIndex(index, size + 1);
         Object[] arr = c.toArray();
         if (arr.length == 0) {
             return false;
@@ -232,7 +232,9 @@ public class SimpleArrayList<E> implements List<E> {
         while (arr.length > data.length - size) {
             grow();
         }
-        System.arraycopy(data, index, data, index + arr.length, size);
+        if (index < size) {
+            System.arraycopy(data, index, data, index + arr.length, size-index);
+        }
         System.arraycopy(arr, 0, data, index, arr.length);
         size += arr.length;
         return true;
@@ -341,7 +343,7 @@ public class SimpleArrayList<E> implements List<E> {
      */
     @Override
     public void add(int index, E element) {
-        Objects.checkIndex(index, size);
+        Objects.checkIndex(index, size + 1);
         modCount++;
         if (size == data.length) {
             grow();
@@ -441,6 +443,7 @@ public class SimpleArrayList<E> implements List<E> {
 
     /**
      * Метод сортирует список при помощи передаваемого ему объекта-компаратора
+     *
      * @param c - компаратор, сравнивающий элементы списка для сортировки
      */
     @Override
